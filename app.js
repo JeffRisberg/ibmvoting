@@ -1,4 +1,5 @@
 var express = require('express');
+var http = require('http');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -29,7 +30,7 @@ app.get('/', routes.index);
 app.get('/polls/polls', routes.list);
 app.get('/polls/:id', routes.poll);
 app.post('/polls', routes.create);
-//app.post('/vote', routes.vote);
+app.post('/vote', routes.vote);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -62,11 +63,15 @@ app.use(function (err, req, res, next) {
     });
 });
 
-
 module.exports = app;
+
+var server = http.createServer(app);
+var io = require('socket.io').listen(server);
 
 var port = Number(process.env.PORT || 3000);
 
-app.listen(port, function () {
-    console.log("Listening on " + port);
+io.sockets.on('connection', routes.vote);
+
+server.listen(port, function () {
+    console.log('Express server listening on port ' + port);
 });
